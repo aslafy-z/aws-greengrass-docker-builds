@@ -24,20 +24,28 @@ jobs:
           greengrass_docker_version=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-docker/tags \
                          | jq -r '.[].name' | grep -E '^[v0-9]' | sort -rV | head -n1)
           greengrass_docker_version=${greengrass_docker_version#v}
+          echo "Greengrass docker version: ${greengrass_docker_version}"
 
-          # newest patch of every Greengrass minor line
-          releases=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-nucleus/releases)
-          mapfile -t versions < <(
-              echo "$releases" \
-              | jq -r '[ .[] | select(.prerelease == false) | .tag_name ] | .[]' \
-              | sed 's/^v//' | sort -rV
-          )
-          declare -A seen; latest=()
-          for v in "${versions[@]}"; do
-            k="${v%.*}"; [[ -z ${seen[$k]:-} ]] && { latest+=("$v"); seen[$k]=1; }
-          done
+          # latest two minors from aws-greengrass-nucleus
+          greengrass_nucleus_versions=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-nucleus/releases | 
+                         jq -r '.[] | select(.prerelease == false) | .tag_name' | 
+                         sed 's/^v//' | 
+                         sort -rV)
+          latest_minors=$(echo "$greengrass_nucleus_versions" | awk -F. '{print $1"."$2}' |  sort -rV | uniq | head -2)
+          latest=()
+          while IFS= read -r version; do
+            for minor in $latest_minors; do
+              if [[ "${version%.*}" == "$minor" ]]; then
+                latest+=("$version")
+                break
+              fi
+            done
+          done <<< "$greengrass_nucleus_versions"
+          greengrass_nucleus_version_matrix="$(printf '%s\n' "${latest[@]}" | jq -R . | jq -cs '{version: .}')"
+          echo "Greengrass nucleus versions matrix: ${greengrass_nucleus_version_matrix}"
+
           echo "greengrass_docker_version=${greengrass_docker_version}" >>"$GITHUB_OUTPUT"
-          echo "greengrass_nucleus_version_matrix=$(printf '%s\n' "${latest[@]}" | jq -R . | jq -cs '{version: .}')" >>"$GITHUB_OUTPUT"
+          echo "greengrass_nucleus_version_matrix=${greengrass_nucleus_version_matrix}" >>"$GITHUB_OUTPUT"
 
   build:
     needs: discover
