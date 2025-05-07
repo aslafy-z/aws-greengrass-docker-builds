@@ -1,0 +1,42 @@
+name: Build custom Greengrass versions on-demand
+
+on:
+  workflow_dispatch:
+    inputs:
+      greengrass_docker_version:
+        description: 'aws-greengrass-docker version (blank = latest, e.g. 2.5.3)'
+        required: false
+      greengrass_nucleus_versions:
+        description: 'Comma/space-separated list (e.g. 2.14.3 2.13.9)'
+        required: true
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    outputs:
+      greengrass_docker_version: ${{ steps.out.outputs.greengrass_docker_version }}
+      greengrass_nucleus_versions_matrix: ${{ steps.out.outputs.greengrass_nucleus_versions_matrix }}
+    steps:
+      - id: out
+        run: |
+          set -euo pipefail
+          tag="${{ github.event.inputs.docker_tag }}"
+          if [[ -z "$tag" ]]; then
+            tag=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-docker/tags \
+                   | jq -r '.[].name' | grep -E '^[v0-9]' | sort -rV | head -n1)
+          fi
+          tag=${tag#v}
+          # split versions into JSON array for matrix
+          read -ra arr <<<"${{ github.event.inputs.nucleus_versions }}"
+          printf 'docker_tag=%s\n' "$tag" >>"$GITHUB_OUTPUT"
+          printf 'version_matrix=%s\n' "$(printf '%s\n' "${arr[@]}" | jq -R . | jq -s '{version: .}')" >>"$GITHUB_OUTPUT"
+
+  build:
+    needs: prep
+    strategy:
+      matrix: ${{ fromJson(needs.prep.outputs.greengrass_nucleus_versions_matrix) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable-build-image.yml
+    with:
+      greengrass_docker_version:          ${{ needs.prep.outputs.greengrass_docker_version }}
+      greengrass_nucleus_versions_matrix: ${{ matrix.version }}
