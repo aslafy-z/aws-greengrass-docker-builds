@@ -37,7 +37,7 @@ jobs:
             k="${v%.*}"; [[ -z ${seen[$k]:-} ]] && { latest+=("$v"); seen[$k]=1; }
           done
           echo "greengrass_docker_version=${greengrass_docker_version}" >>"$GITHUB_OUTPUT"
-          echo "greengrass_nucleus_version_matrix=$(printf '%s\n' "${latest[@]}" | jq -R . | jq -s '{version: .}')" >>"$GITHUB_OUTPUT"
+          echo "greengrass_nucleus_version_matrix=$(printf '%s\n' "${latest[@]}" | jq -R . | jq -cs '{version: .}')" >>"$GITHUB_OUTPUT"
 
   build:
     needs: discover
