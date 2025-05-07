@@ -52,5 +52,5 @@ jobs:
       fail-fast: false
     uses: ./.github/workflows/build-image.yml
     with:
-      greengrass_docker_ref:      ${{ needs.discover.outputs.greengrass_docker_ref }}
       greengrass_nucleus_version: ${{ matrix.version }}
+      greengrass_docker_ref:      ${{ needs.discover.outputs.greengrass_docker_ref }}
