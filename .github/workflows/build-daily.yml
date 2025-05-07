@@ -20,10 +20,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # newest version from aws-greengrass-docker
-          greengrass_docker_version=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-docker/tags \
-                         | jq -r '.[].name' | grep -E '^[v0-9]' | sort -rV | head -n1)
-          greengrass_docker_version=${greengrass_docker_version#v}
+          # latest working version for aws-greengrass-docker
+          greengrass_docker_version=f745fdecba31c8903da6494a0ceeca78e497e041
           echo "Greengrass docker version: ${greengrass_docker_version}"
 
           # latest two minors from aws-greengrass-nucleus
