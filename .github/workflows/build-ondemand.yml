@@ -36,7 +36,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.prep.outputs.greengrass_nucleus_versions_matrix) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable-build-image.yml
+    uses: ./.github/workflows/build-image.yml
     with:
       greengrass_docker_version:          ${{ needs.prep.outputs.greengrass_docker_version }}
       greengrass_nucleus_versions_matrix: ${{ matrix.version }}
