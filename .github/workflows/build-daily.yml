@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       greengrass_nucleus_version_matrix: ${{ steps.set.outputs.greengrass_nucleus_version_matrix }}
-      greengrass_docker_version:         ${{ steps.set.outputs.greengrass_docker_version }}
+      greengrass_docker_ref:             ${{ steps.set.outputs.greengrass_docker_ref }}
     steps:
       - id: set
         run: |
@@ -22,7 +22,7 @@ jobs:
 
           # latest working version for aws-greengrass-docker
           greengrass_docker_version=f745fdecba31c8903da6494a0ceeca78e497e041
-          echo "Greengrass docker version: ${greengrass_docker_version}"
+          echo "Greengrass docker ref: ${greengrass_docker_ref}"
 
           # latest two minors from aws-greengrass-nucleus
           greengrass_nucleus_versions=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-nucleus/releases | 
@@ -42,7 +42,7 @@ jobs:
           greengrass_nucleus_version_matrix="$(printf '%s\n' "${latest[@]}" | jq -R . | jq -cs '{version: .}')"
           echo "Greengrass nucleus versions matrix: ${greengrass_nucleus_version_matrix}"
 
-          echo "greengrass_docker_version=${greengrass_docker_version}" >>"$GITHUB_OUTPUT"
+          echo "greengrass_docker_ref=${greengrass_docker_ref}" >>"$GITHUB_OUTPUT"
           echo "greengrass_nucleus_version_matrix=${greengrass_nucleus_version_matrix}" >>"$GITHUB_OUTPUT"
 
   build:
@@ -52,5 +52,5 @@ jobs:
       fail-fast: false
     uses: ./.github/workflows/build-image.yml
     with:
-      greengrass_docker_version:  ${{ needs.discover.outputs.greengrass_docker_version }}
+      greengrass_docker_ref:      ${{ needs.discover.outputs.greengrass_docker_ref }}
       greengrass_nucleus_version: ${{ matrix.version }}
