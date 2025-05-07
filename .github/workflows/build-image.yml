@@ -6,6 +6,10 @@ on:
       greengrass_docker_ref: { required: true,  type: string }   # e.g. main, v1.64.0
       greengrass_nucleus_version: { required: true,  type: string }   # e.g. 2.14.3
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/greengrass-nucleus
