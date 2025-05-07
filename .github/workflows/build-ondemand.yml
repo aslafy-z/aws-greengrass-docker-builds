@@ -27,7 +27,7 @@ jobs:
           # split versions into JSON array for matrix
           read -ra arr <<<"${{ github.event.inputs.greengrass_nucleus_versions }}"
           printf 'greengrass_nucleus_versions_matrix=%s\n' "$(printf '%s\n' "${arr[@]}" | jq -R . | jq -cs '{version: .}')" >>"$GITHUB_OUTPUT"
-          printf 'greengrass_docker_ref=%s\n' "$greengrass_docker_ref" >>"$GITHUB_OUTPUT"
+          printf 'greengrass_docker_ref=%s\n' "${{ github.event.inputs.greengrass_docker_ref }}" >>"$GITHUB_OUTPUT"
 
   build:
     needs: prep
