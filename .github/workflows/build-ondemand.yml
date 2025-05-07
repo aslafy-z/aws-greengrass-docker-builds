@@ -29,7 +29,7 @@ jobs:
           # split versions into JSON array for matrix
           read -ra arr <<<"${{ github.event.inputs.nucleus_versions }}"
           printf 'docker_tag=%s\n' "$tag" >>"$GITHUB_OUTPUT"
-          printf 'version_matrix=%s\n' "$(printf '%s\n' "${arr[@]}" | jq -R . | jq -s '{version: .}')" >>"$GITHUB_OUTPUT"
+          printf 'version_matrix=%s\n' "$(printf '%s\n' "${arr[@]}" | jq -R . | jq -cs '{version: .}')" >>"$GITHUB_OUTPUT"
 
   build:
     needs: prep
