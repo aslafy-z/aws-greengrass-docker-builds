@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/greengrass-nucleus
+  IMAGE_NAME: ${{ github.repository }}/greengrass-nucleus
 
 jobs:
   build:
@@ -27,7 +27,22 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}       # forwarded from caller
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ inputs.greengrass_nucleus_version }}-docker${{ inputs.greengrass_docker_ref }}
+          labels: |
+            org.opencontainers.image.title=AWS Greengrass Nucleus
+            org.opencontainers.image.version=${{ inputs.greengrass_nucleus_version }}-docker${{ inputs.greengrass_docker_ref }}
+            org.opencontainers.image.description=Image built from aws-greengrass-docker v${{ inputs.greengrass_docker_ref }} for Greengrass Nucleus ${{ inputs.greengrass_nucleus_version }}
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Build & push
         uses: docker/build-push-action@v5
@@ -37,5 +52,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             GREENGRASS_RELEASE_VERSION=${{ inputs.greengrass_nucleus_version }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:docker${{ inputs.greengrass_docker_version }}-nucleus${{ inputs.greengrass_nucleus_version }}
+          tags:   ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
