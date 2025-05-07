@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       greengrass_docker_version:
-        description: 'aws-greengrass-docker version (blank = latest, e.g. 2.5.3)'
+        description: 'aws-greengrass-docker version (blank = main, e.g. v2.5.3)'
         required: false
       greengrass_nucleus_versions:
-        description: 'Comma/space-separated list (e.g. 2.14.3 2.13.9)'
+        description: 'Comma/space-separated list of aws-greengrass-nucleus version (e.g. 2.14.3 2.13.9)'
         required: true
 
 jobs:
@@ -20,15 +20,9 @@ jobs:
       - id: out
         run: |
           set -euo pipefail
-          tag="${{ github.event.inputs.greengrass_docker_version }}"
-          if [[ -z "$tag" ]]; then
-            tag=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-docker/tags \
-                   | jq -r '.[].name' | grep -E '^[v0-9]' | sort -rV | head -n1)
-          fi
-          tag=${tag#v}
           # split versions into JSON array for matrix
           read -ra arr <<<"${{ github.event.inputs.greengrass_nucleus_versions }}"
-          printf 'greengrass_docker_version=%s\n' "$tag" >>"$GITHUB_OUTPUT"
+          printf 'greengrass_docker_version=%s\n' "$greengrass_docker_version" >>"$GITHUB_OUTPUT"
           printf 'greengrass_nucleus_versions_matrix=%s\n' "$(printf '%s\n' "${arr[@]}" | jq -R . | jq -cs '{version: .}')" >>"$GITHUB_OUTPUT"
 
   build:
