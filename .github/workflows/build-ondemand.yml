@@ -6,9 +6,11 @@ on:
       greengrass_nucleus_versions:
         description: 'Comma/space-separated list of aws-greengrass-nucleus version (e.g. 2.14.3 2.13.9)'
         required: true
+        default: 2.14.3
       greengrass_docker_ref:
         description: 'aws-greengrass-docker ref (blank = main, e.g. v2.5.3)'
         required: false
+        default: f745fdecba31c8903da6494a0ceeca78e497e041
 
 permissions:
   contents: read
