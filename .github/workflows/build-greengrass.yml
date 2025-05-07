@@ -1,0 +1,41 @@
+name: Build a Greengrass image
+
+on:
+  workflow_call:
+    inputs:
+      greengrass_docker_version: { required: true,  type: string }   # e.g. 1.64.0
+      greengrass_nucleus_version: { required: true,  type: string }   # e.g. 2.14.3
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/greengrass-nucleus
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: aws-greengrass/aws-greengrass-docker
+          ref:  "v${{ inputs.greengrass_docker_version }}"
+          path: docker-src
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}       # forwarded from caller
+
+      - name: Build & push
+        uses: docker/build-push-action@v5
+        with:
+          context: docker-src
+          push: true
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            GREENGRASS_RELEASE_VERSION=${{ inputs.greengrass_nucleus_version }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:docker${{ inputs.greengrass_docker_version }}-nucleus${{ inputs.greengrass_nucleus_version }}
