@@ -3,27 +3,27 @@ name: Build custom Greengrass versions on-demand
 on:
   workflow_dispatch:
     inputs:
-      greengrass_docker_ref:
-        description: 'aws-greengrass-docker ref (blank = main, e.g. v2.5.3)'
-        required: false
       greengrass_nucleus_versions:
         description: 'Comma/space-separated list of aws-greengrass-nucleus version (e.g. 2.14.3 2.13.9)'
         required: true
+      greengrass_docker_ref:
+        description: 'aws-greengrass-docker ref (blank = main, e.g. v2.5.3)'
+        required: false
 
 jobs:
   prep:
     runs-on: ubuntu-latest
     outputs:
-      greengrass_docker_ref: ${{ steps.out.outputs.greengrass_docker_ref }}
       greengrass_nucleus_versions_matrix: ${{ steps.out.outputs.greengrass_nucleus_versions_matrix }}
+      greengrass_docker_ref: ${{ steps.out.outputs.greengrass_docker_ref }}
     steps:
       - id: out
         run: |
           set -euo pipefail
           # split versions into JSON array for matrix
           read -ra arr <<<"${{ github.event.inputs.greengrass_nucleus_versions }}"
-          printf 'greengrass_docker_ref=%s\n' "$greengrass_docker_ref" >>"$GITHUB_OUTPUT"
           printf 'greengrass_nucleus_versions_matrix=%s\n' "$(printf '%s\n' "${arr[@]}" | jq -R . | jq -cs '{version: .}')" >>"$GITHUB_OUTPUT"
+          printf 'greengrass_docker_ref=%s\n' "$greengrass_docker_ref" >>"$GITHUB_OUTPUT"
 
   build:
     needs: prep
@@ -32,5 +32,5 @@ jobs:
       fail-fast: false
     uses: ./.github/workflows/build-image.yml
     with:
-      greengrass_docker_ref:              ${{ needs.prep.outputs.greengrass_docker_ref }}
       greengrass_nucleus_versions_matrix: ${{ matrix.version }}
+      greengrass_docker_ref:              ${{ needs.prep.outputs.greengrass_docker_ref }}
