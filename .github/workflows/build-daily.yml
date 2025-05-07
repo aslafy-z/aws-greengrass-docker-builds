@@ -20,10 +20,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          # latest working version for aws-greengrass-docker
-          greengrass_docker_ref=f745fdec
-          echo "Greengrass docker ref: ${greengrass_docker_ref}"
-
           # latest two minors from aws-greengrass-nucleus
           greengrass_nucleus_versions=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-nucleus/releases | 
                          jq -r '.[] | select(.prerelease == false) | .tag_name' | 
@@ -42,8 +38,12 @@ jobs:
           greengrass_nucleus_version_matrix="$(printf '%s\n' "${latest[@]}" | jq -R . | jq -cs '{version: .}')"
           echo "Greengrass nucleus versions matrix: ${greengrass_nucleus_version_matrix}"
 
-          echo "greengrass_docker_ref=${greengrass_docker_ref}" >>"$GITHUB_OUTPUT"
+          # latest working version for aws-greengrass-docker
+          greengrass_docker_ref=f745fdec
+          echo "Greengrass docker ref: ${greengrass_docker_ref}"
+
           echo "greengrass_nucleus_version_matrix=${greengrass_nucleus_version_matrix}" >>"$GITHUB_OUTPUT"
+          echo "greengrass_docker_ref=${greengrass_docker_ref}" >>"$GITHUB_OUTPUT"
 
   build:
     needs: discover
