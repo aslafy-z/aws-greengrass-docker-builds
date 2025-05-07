@@ -39,7 +39,7 @@ jobs:
           echo "Greengrass nucleus versions matrix: ${greengrass_nucleus_version_matrix}"
 
           # latest working version for aws-greengrass-docker
-          greengrass_docker_ref=f745fdec
+          greengrass_docker_ref=f745fdecba31c8903da6494a0ceeca78e497e041
           echo "Greengrass docker ref: ${greengrass_docker_ref}"
 
           echo "greengrass_nucleus_version_matrix=${greengrass_nucleus_version_matrix}" >>"$GITHUB_OUTPUT"
