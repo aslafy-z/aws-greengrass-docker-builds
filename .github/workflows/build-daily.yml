@@ -21,7 +21,7 @@ jobs:
           set -euo pipefail
 
           # latest working version for aws-greengrass-docker
-          greengrass_docker_version=f745fdec
+          greengrass_docker_ref=f745fdec
           echo "Greengrass docker ref: ${greengrass_docker_ref}"
 
           # latest two minors from aws-greengrass-nucleus
