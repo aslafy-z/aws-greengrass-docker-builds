@@ -3,8 +3,12 @@ name: Build a Greengrass image
 on:
   workflow_call:
     inputs:
-      greengrass_docker_ref: { required: true,  type: string }   # e.g. main, v1.64.0
-      greengrass_nucleus_version: { required: true,  type: string }   # e.g. 2.14.3
+      greengrass_docker_ref: # e.g. main, v1.64.0
+        type: string
+        required: true
+      greengrass_nucleus_version: # e.g. 2.14.3
+        type: string
+        required: true
 
 permissions:
   contents: read
