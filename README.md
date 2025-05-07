@@ -7,7 +7,7 @@ published to GitHub Container Registry (GHCR).
 
 | Status | Schedule | Context tag | Architectures |
 |--------|----------|-------------|---------------|
-| ![CI badge](https://github.com/aslafy-z/aws-greengrass-docker-builds/actions/workflows/build-latest.yml/badge.svg) | Daily 03:30 UTC + manual | _Latest version in_ **aws-greengrass-docker** | `linux/amd64`, `linux/arm64` |
+| ![CI badge](https://github.com/aslafy-z/aws-greengrass-docker-builds/actions/workflows/build-daily.yml/badge.svg) | Daily 03:30 UTC + manual | _Latest version in_ **aws-greengrass-docker** | `linux/amd64`, `linux/arm64` |
 
 ---
 
