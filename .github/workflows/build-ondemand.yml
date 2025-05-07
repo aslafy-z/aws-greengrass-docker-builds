@@ -10,6 +10,10 @@ on:
         description: 'aws-greengrass-docker ref (blank = main, e.g. v2.5.3)'
         required: false
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   prep:
     runs-on: ubuntu-latest
