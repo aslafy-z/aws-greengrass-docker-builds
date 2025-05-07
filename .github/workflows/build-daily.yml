@@ -1,0 +1,50 @@
+name: Build latest Greengrass versions daily
+
+on:
+  schedule:       # once per day
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      greengrass_nucleus_version_matrix: ${{ steps.set.outputs.greengrass_nucleus_version_matrix }}
+      greengrass_docker_version:         ${{ steps.set.outputs.greengrass_docker_version }}
+    steps:
+      - id: set
+        run: |
+          set -euo pipefail
+
+          # newest version from aws-greengrass-docker
+          greengrass_docker_version=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-docker/tags \
+                         | jq -r '.[].name' | grep -E '^[v0-9]' | sort -rV | head -n1)
+          greengrass_docker_version=${greengrass_docker_version#v}
+
+          # newest patch of every Greengrass minor line
+          releases=$(curl -fsSL https://api.github.com/repos/aws-greengrass/aws-greengrass-nucleus/releases)
+          mapfile -t versions < <(
+              echo "$releases" \
+              | jq -r '[ .[] | select(.prerelease == false) | .tag_name ] | .[]' \
+              | sed 's/^v//' | sort -rV
+          )
+          declare -A seen; latest=()
+          for v in "${versions[@]}"; do
+            k="${v%.*}"; [[ -z ${seen[$k]:-} ]] && { latest+=("$v"); seen[$k]=1; }
+          done
+          echo "greengrass_docker_version=${greengrass_docker_version}" >>"$GITHUB_OUTPUT"
+          echo "greengrass_nucleus_version_matrix=$(printf '%s\n' "${latest[@]}" | jq -R . | jq -s '{version: .}')" >>"$GITHUB_OUTPUT"
+
+  build:
+    needs: discover
+    strategy:
+      matrix: ${{ fromJson(needs.discover.outputs.greengrass_nucleus_version_matrix) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable-build-image.yml
+    with:
+      greengrass_docker_version:  ${{ needs.discover.outputs.greengrass_docker_version }}
+      greengrass_nucleus_version: ${{ matrix.version }}
